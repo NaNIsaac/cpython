@@ -13,6 +13,7 @@ import os
 import tabnanny
 import time
 import tokenize
+import traceback
 
 from tkinter import messagebox
 
@@ -101,7 +102,16 @@ class ScriptBinding:
                 lineno += 1  #mark end of offending line
             pos = "0.0 + %d lines + %d chars" % (lineno-1, offset-1)
             editwin.colorize_syntax_error(text, pos)
-            self.errorbox("SyntaxError", "%-20s" % msg)
+
+            if isinstance(value, SyntaxError):
+                shell.stderr.write(
+                    ''.join(traceback.format_exception_only(value))
+                )
+                shell.text.see("end")
+                shell.top.lift()
+                shell.text.focus_set()
+            else:
+                self.errorbox("SyntaxError", "%-20s" % msg)
             return False
         finally:
             shell.set_warning_stream(saved_stream)
